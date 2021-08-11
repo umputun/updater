@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine as build
+FROM umputun/baseimage:buildgo-v1.7.0  as build
 
 ARG GIT_BRANCH
 ARG GITHUB_SHA
@@ -20,7 +20,7 @@ RUN \
     cd app && go build -o /build/updater -ldflags "-X main.revision=${version} -s -w"
 
 
-FROM ghcr.io/umputun/baseimage/app:v1.6.1
+FROM ghcr.io/umputun/baseimage/app:v1.7.0
 COPY --from=build /build/updater /srv/updater
 WORKDIR /srv
 ENTRYPOINT ["/srv/updater"]
