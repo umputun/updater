@@ -1,10 +1,9 @@
 # updater  [![Build Status](https://github.com/umputun/updater/workflows/build/badge.svg)](https://github.com/umputun/updater/actions)
 
-Simple web-hook based receiver executing things via HTTP requests.
+Updater is a simple web-hook-based receiver executing things via HTTP requests and invoking remote updates without exposing any sensitive info, like ssh keys, passwords, etc. The updater is usually called from CI/CD system (i.e., Github action), and the actual http call looks like `curl https://<server>/update/<task-name>/<access-key>`
 
-It was created to allow some simple way to invoke remote updates without exposing any sensitive info, like ssh key, passwords and so on. The updater usually invoked from CI/CD system (i.e. github action) and the actual call looks like `curl https://server/update/task/access-key`
+List of tasks defined in the configuration file, and each task has its custom section for the command.
 
-List of tasks defined in the configuration file and each task has its own custom section for the command.
 
 Example of `updater.yml`:
 
@@ -24,7 +23,76 @@ tasks:
       docker restart feed-master
 ```
 
-By default the update call synchronous and can be switched to non-blocking mode with `async` query parameter, i.e. `curl https://server/update/task/access-key?async=1`
+By default the update call synchronous but can be switched to non-blocking mode with `async` query parameter, i.e. `curl https://server/update/remark42-site/super-seecret-key?async=1`
+
+## install
+
+Updater distributed as multi-arch docker container as well as binary files for multiple platforms. Container has the docker client preinstalled to allow the typical "docker pull & docker restart" update sequence.
+
+Containers available on both [github container registry (ghcr)](https://github.com/umputun/updater/pkgs/container/updater) and [docker hub](https://hub.docker.com/repository/docker/umputun/updater)
+
+
+This is an example of updater usage inside of the docker compose. It uses [reproxy](https://reproxy.io) as the reversed proxy, but any other (nginx, apache, haproxy, etc) can be used as well.
+
+```yaml
+services:
+  
+  reproxy:
+    image: ghcr.io/umputun/reproxy:master
+    restart: always
+    hostname: reproxy
+    container_name: reproxy
+    logging: &default_logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    ports:
+      - "80:8080"
+      - "443:8443"
+    environment:
+      - TZ=America/Chicago
+      - DOCKER_ENABLED=true
+      - SSL_TYPE=auto
+      - SSL_ACME_EMAIL=umputun@gmail.com
+      - SSL_ACME_FQDN=jess.umputun.com,echo.umputun.com
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./var/ssl:/srv/var/ssl
+
+  echo:
+    image: ghcr.io/umputun/echo-http
+    hostname: echo
+    container_name: echo
+    command: --message="echo echo 123"
+    logging: *default_logging
+    labels:
+      reproxy.server: 'echo.umputun.com'
+      reproxy.route: '^/(.*)'
+
+  updater:
+    image: ghcr.io/umputun/updater:master
+    container_name: "updater"
+    hostname: "updater"
+    restart: always
+    logging: *default_logging
+    environment:
+      - LISTEN=0.0.0.0:8080
+      - KEY=super-secret-password
+      - CONF=/srv/etc/updater.yml
+    ports:
+      - "8080"
+    volumes:
+      - ./etc:/srv/etc
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      reproxy.server: 'jess.umputun.com'
+      reproxy.route: '^/(.*)'
+```
+
+## other use cases
+
+The main goal of this utility is to update containers; however, all it does is the remote activation of predefined commands. Such command can do anything user like, not just "docker pull && docker restart." For instance, it can be used to schedule remote jobs from some central orchestrator, run remote cleanup jobs, etc.
 
 ## all parameters
 
