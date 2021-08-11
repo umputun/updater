@@ -18,11 +18,11 @@ type Config struct {
 
 // LoadConfig reads and parses yaml config
 func LoadConfig(file string) (*Config, error) {
-	fh, err := os.Open(file)
+	fh, err := os.Open(file) //nolint
 	if err != nil {
 		return nil, fmt.Errorf("can't load config file %s: %w", file, err)
 	}
-	defer fh.Close()
+	defer fh.Close() //nolint
 
 	res := Config{}
 	if err := yaml.NewDecoder(fh).Decode(&res); err != nil {

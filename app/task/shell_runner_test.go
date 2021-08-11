@@ -23,14 +23,14 @@ func TestShellRunner_Run(t *testing.T) {
 		lw := bytes.NewBuffer(nil)
 		err := sr.Run(context.Background(), "no-such-command 123", lw)
 		require.Error(t, err)
-		assert.Equal(t, "sh: no-such-command: command not found\n", lw.String())
+		assert.Contains(t, lw.String(), "not found")
 	}
 
 	{
 		lw := bytes.NewBuffer(nil)
 		err := sr.Run(context.Background(), "@no-such-command 123", lw)
 		require.NoError(t, err)
-		assert.Equal(t, "sh: no-such-command: command not found\n", lw.String())
+		assert.Contains(t, lw.String(), "not found")
 	}
 
 }
