@@ -21,6 +21,7 @@ RUN \
 
 
 FROM ghcr.io/umputun/baseimage/app:v1.7.0
+RUN apk add docker
 COPY --from=build /build/updater /srv/updater
 WORKDIR /srv
 ENTRYPOINT ["/srv/updater"]
