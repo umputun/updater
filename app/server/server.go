@@ -72,10 +72,12 @@ func (s *Rest) router() http.Handler {
 	return router
 }
 
-// GET /update/{task}/{key}
+// GET /update/{task}/{key}?async=[0|1]
 func (s *Rest) taskCtrl(w http.ResponseWriter, r *http.Request) {
 	taskName := chi.URLParam(r, "task")
 	key := chi.URLParam(r, "key")
+	isAsync := r.URL.Query().Get("async") == "1" || r.URL.Query().Get("async") == "yes"
+
 	if subtle.ConstantTimeCompare([]byte(key), []byte(s.SecretKey)) != 1 {
 		http.Error(w, "rejected", http.StatusForbidden)
 		return
@@ -85,9 +87,24 @@ func (s *Rest) taskCtrl(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unknown command", http.StatusBadRequest)
 		return
 	}
+
 	log.Printf("[DEBUG] request for task %s", taskName)
+
+	if isAsync {
+		go func() {
+			if err := s.Runner.Run(context.Background(), command, log.ToWriter(log.Default(), ">")); err != nil {
+				log.Printf("[WARN] failed command")
+				return
+			}
+		}()
+		rest.RenderJSON(w, rest.JSON{"submitted": "ok", "task": taskName})
+		return
+	}
+
 	if err := s.Runner.Run(r.Context(), command, log.ToWriter(log.Default(), ">")); err != nil {
 		http.Error(w, "failed command", http.StatusInternalServerError)
 		return
 	}
+
+	rest.RenderJSON(w, rest.JSON{"updater": "ok", "task": taskName})
 }
