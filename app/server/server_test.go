@@ -57,3 +57,26 @@ func TestRest_taskCtrl(t *testing.T) {
 	assert.Equal(t, "echo task1", runner.RunCalls()[0].Command)
 	assert.Equal(t, "echo task2", runner.RunCalls()[1].Command)
 }
+
+func TestRest_taskCtrlAsync(t *testing.T) {
+	conf := &mocks.ConfigMock{GetTaskCommandFunc: func(name string) (string, bool) {
+		return "echo " + name, true
+	}}
+
+	runner := &mocks.RunnerMock{RunFunc: func(ctx context.Context, command string, logWriter io.Writer) error {
+		time.Sleep(100 * time.Millisecond)
+		return nil
+	}}
+
+	srv := Rest{Listen: "localhost:54009", Version: "v1", Config: conf, SecretKey: "12345", Runner: runner}
+
+	ts := httptest.NewServer(srv.router())
+	defer ts.Close()
+
+	st := time.Now()
+	resp, err := http.Get(ts.URL + "/update/task1/12345?async=1")
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.True(t, time.Since(st) < 100*time.Millisecond, time.Since(st))
+	time.Sleep(100 * time.Millisecond)
+}
