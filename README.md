@@ -1,4 +1,4 @@
-# updater  [![Build Status](https://github.com/umputun/updater/workflows/build/badge.svg)](https://github.com/umputun/updater/actions)
+# updater  [![Build Status](https://github.com/umputun/updater/workflows/build/badge.svg)](https://github.com/umputun/updater/actions) [![Coverage Status](https://coveralls.io/repos/github/umputun/updater/badge.svg?branch=master)](https://coveralls.io/github/umputun/updater?branch=master)
 
 Updater is a simple web-hook-based receiver executing things via HTTP requests and invoking remote updates without exposing any sensitive info, like ssh keys, passwords, etc. The updater is usually called from CI/CD system (i.e., Github action), and the actual http call looks like `curl https://<server>/update/<task-name>/<access-key>`
 
