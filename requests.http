@@ -1,0 +1,11 @@
+### ping
+GET http://localhost:8080/ping
+
+### execute test-echo task
+GET  http://localhost:8080/update/test-echo/12345
+
+### execute multiline task
+GET  http://localhost:8080/update/multiline/12345
+
+### execute multiline task, wrong secret
+GET  http://localhost:8080/update/multiline/12345xxx

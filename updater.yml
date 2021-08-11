@@ -1,0 +1,8 @@
+tasks:
+  - name: test-echo
+    command: echo test 123
+
+  - name: multiline
+    command: |
+      echo "multiline test"
+      ls -la

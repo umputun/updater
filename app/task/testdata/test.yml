@@ -1,0 +1,6 @@
+tasks:
+  - name: test1
+    command: "do blah1"
+
+  - name: test2
+    command: "do blah2"
