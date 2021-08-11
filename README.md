@@ -1,4 +1,4 @@
-# updater [![build](https://github.com/umputun/updater/actions/workflows/ci.yml/badge.svg)]
+# updater  [![Build Status](https://github.com/umputun/updater/workflows/build/badge.svg)](https://github.com/umputun/updater/actions)
 
 Simple web-hook based receiver executing things via HTTP requests.
 
