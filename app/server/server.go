@@ -106,5 +106,5 @@ func (s *Rest) taskCtrl(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rest.RenderJSON(w, rest.JSON{"updater": "ok", "task": taskName})
+	rest.RenderJSON(w, rest.JSON{"updated": "ok", "task": taskName})
 }
