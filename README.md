@@ -23,7 +23,7 @@ tasks:
       docker restart feed-master
 ```
 
-By default the update call synchronous but can be switched to non-blocking mode with `async` query parameter, i.e. `curl https://server/update/remark42-site/super-seecret-key?async=1`
+By default the update call synchronous but can be switched to non-blocking mode with `async` query parameter, i.e. `curl https://example.com/update/remark42-site/super-seecret-key?async=1`
 
 ## install
 
