@@ -86,13 +86,14 @@ func (s *Rest) taskCtrl(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "rejected", http.StatusForbidden)
 		return
 	}
+
 	command, ok := s.Config.GetTaskCommand(taskName)
 	if !ok {
 		http.Error(w, "unknown command", http.StatusBadRequest)
 		return
 	}
 
-	log.Printf("[DEBUG] request for task %s", taskName)
+	log.Printf("[INFO] invoke task %s", taskName)
 
 	if isAsync {
 		go func() {
