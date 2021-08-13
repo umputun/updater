@@ -7,8 +7,12 @@ Updater is a simple web-hook-based receiver executing things via HTTP requests a
 List of tasks defined in the configuration file, and each task has its custom section for the command.
 
 ---
+
+<div align="center">
+
 [![Build Status](https://github.com/umputun/updater/workflows/build/badge.svg)](https://github.com/umputun/updater/actions) &nbsp;[![Coverage Status](https://coveralls.io/repos/github/umputun/updater/badge.svg?branch=master)](https://coveralls.io/github/umputun/updater?branch=master) 
 
+</div>
 
 Example of `updater.yml`:
 
