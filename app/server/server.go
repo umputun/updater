@@ -19,11 +19,12 @@ import (
 
 // Rest implement http api invoking remote execution for requested tasks
 type Rest struct {
-	Listen    string
-	Version   string
-	SecretKey string
-	Config    Config
-	Runner    Runner
+	Listen      string
+	Version     string
+	SecretKey   string
+	Config      Config
+	Runner      Runner
+	UpdateDelay time.Duration
 }
 
 // Config declares command loader from config for given tasks
@@ -65,15 +66,18 @@ func (s *Rest) Run(ctx context.Context) error {
 func (s *Rest) router() http.Handler {
 	router := chi.NewRouter()
 	router.Use(rest.Recoverer(log.Default()))
+	router.Use(rest.Throttle(100)) // limit total number of the running requests
 	router.Use(rest.AppInfo("updater", "umputun", s.Version))
 	router.Use(rest.Ping)
 	router.Use(tollbooth_chi.LimitHandler(tollbooth.NewLimiter(10, nil)))
+
 	router.Get("/update/{task}/{key}", s.taskCtrl)
 	return router
 }
 
 // GET /update/{task}/{key}?async=[0|1]
 func (s *Rest) taskCtrl(w http.ResponseWriter, r *http.Request) {
+	time.Sleep(s.UpdateDelay) // slow down the request
 	taskName := chi.URLParam(r, "task")
 	key := chi.URLParam(r, "key")
 	isAsync := r.URL.Query().Get("async") == "1" || r.URL.Query().Get("async") == "yes"

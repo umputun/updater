@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	log "github.com/go-pkgz/lgr"
 	"github.com/umputun/go-flags"
@@ -61,11 +62,12 @@ func main() {
 	runner := &task.ShellRunner{BatchMode: opts.Batch}
 
 	srv := server.Rest{
-		Listen:    opts.Listen,
-		Version:   revision,
-		SecretKey: opts.SecretKey,
-		Config:    conf,
-		Runner:    runner,
+		Listen:      opts.Listen,
+		Version:     revision,
+		SecretKey:   opts.SecretKey,
+		Config:      conf,
+		Runner:      runner,
+		UpdateDelay: time.Second,
 	}
 
 	if err := srv.Run(ctx); err != nil {

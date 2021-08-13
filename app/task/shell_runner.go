@@ -27,50 +27,66 @@ func (s *ShellRunner) Run(ctx context.Context, command string, logWriter io.Writ
 	}
 
 	command = strings.TrimSpace(command)
-	suppressError := false
-	if command[0] == '@' {
-		command = command[1:]
-		suppressError = true
-		log.Printf("[DEBUG] suppress error for %s", command)
-	}
-	log.Printf("[INFO] execute %q", command)
-	cmd := exec.CommandContext(ctx, "sh", "-c", command) // nolint
 	if s.BatchMode {
-		batchFile, err := s.prepBatch(command, suppressError)
+		batchFile, err := s.prepBatch(command)
 		if err != nil {
-			return fmt.Errorf("can't run comand in batch mode: %w", err)
+			return fmt.Errorf("can't prepare batch: %w", err)
 		}
-		defer func() {
-			if e := os.Remove(batchFile); e != nil {
-				log.Printf("[WARN] can't remove temp batch file %s, %v", batchFile, e)
-			}
-		}()
-		cmd = exec.CommandContext(ctx, "sh", batchFile) // nolint
+		return s.runBatch(ctx, batchFile, logWriter)
 	}
 
-	cmd.Stdout = logWriter
-	cmd.Stderr = logWriter
-	cmd.Stdin = os.Stdin
-	log.Printf("[DEBUG] executing command: %s", command)
-
-	err := cmd.Run()
-	if err != nil {
-		if suppressError {
-			log.Printf("[WARN] suppressed error executing %s, %v", command, err)
-			return nil
+	execCmd := func(command string) error {
+		log.Printf("[INFO] execute %q", command)
+		var suppressError bool
+		if command[0] == '@' {
+			command = command[1:]
+			suppressError = true
+			log.Printf("[DEBUG] suppress error for %s", command)
 		}
-		return err
+		cmd := exec.CommandContext(ctx, "sh", "-c", command) // nolint
+		cmd.Stdout = logWriter
+		cmd.Stderr = logWriter
+		cmd.Stdin = os.Stdin
+		if err := cmd.Run(); err != nil {
+			if suppressError {
+				log.Printf("[WARN] suppressed error executing %q, %v", command, err)
+				return nil
+			}
+			return fmt.Errorf("failed to execute %s: %w", command, err)
+		}
+		return nil
+	}
+
+	for _, c := range strings.Split(command, "\n") {
+		if c = strings.TrimSpace(c); c == "" {
+			continue
+		}
+		if err := execCmd(c); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (s *ShellRunner) prepBatch(cmd string, suppressError bool) (batchFile string, err error) {
+func (s *ShellRunner) runBatch(ctx context.Context, batchFile string, logWriter io.Writer) error {
+	defer func() {
+		if e := os.Remove(batchFile); e != nil {
+			log.Printf("[WARN] can't remove temp batch file %s, %v", batchFile, e)
+		}
+	}()
+	cmd := exec.CommandContext(ctx, "sh", batchFile) // nolint
+	cmd.Stdout = logWriter
+	cmd.Stderr = logWriter
+	cmd.Stdin = os.Stdin
+	log.Printf("[DEBUG] executing batch commands: %s", batchFile)
+
+	return cmd.Run()
+}
+
+func (s *ShellRunner) prepBatch(cmd string) (batchFile string, err error) {
 	var script []string
 	script = append(script, "#!bin/sh")
-	if !suppressError {
-		script = append(script, "set -e")
-	}
 	script = append(script, strings.Split(cmd, "\n")...)
 	fh, e := ioutil.TempFile("/tmp", "updater")
 	if e != nil {
