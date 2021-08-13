@@ -32,11 +32,13 @@ func TestRest_taskCtrl(t *testing.T) {
 		return nil
 	}}
 
-	srv := Rest{Listen: "localhost:54009", Version: "v1", Config: conf, SecretKey: "12345", Runner: runner}
+	srv := Rest{Listen: "localhost:54009", Version: "v1", Config: conf, SecretKey: "12345",
+		Runner: runner, UpdateDelay: time.Millisecond * 200}
 
 	ts := httptest.NewServer(srv.router())
 	defer ts.Close()
 
+	st := time.Now()
 	resp, err := http.Get(ts.URL + "/update/task1/12345")
 	require.NoError(t, err)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -48,7 +50,7 @@ func TestRest_taskCtrl(t *testing.T) {
 	resp, err = http.Get(ts.URL + "/update/task2/12345bad")
 	require.NoError(t, err)
 	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
-
+	assert.True(t, time.Since(st) >= time.Millisecond*200)
 	assert.Equal(t, 2, len(conf.GetTaskCommandCalls()))
 	assert.Equal(t, "task1", conf.GetTaskCommandCalls()[0].Name)
 	assert.Equal(t, "task2", conf.GetTaskCommandCalls()[1].Name)
