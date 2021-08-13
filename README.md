@@ -1,8 +1,13 @@
-# updater  [![Build Status](https://github.com/umputun/updater/workflows/build/badge.svg)](https://github.com/umputun/updater/actions) [![Coverage Status](https://coveralls.io/repos/github/umputun/updater/badge.svg?branch=master)](https://coveralls.io/github/umputun/updater?branch=master)
+<div align="center">
+  <img class="logo" src="https://raw.githubusercontent.com/umputun/updater/master/site/src/logo-bg.svg" width="355px" height="142px" alt="Updater | Simple Remote Updater"/>
+</div>
 
 Updater is a simple web-hook-based receiver executing things via HTTP requests and invoking remote updates without exposing any sensitive info, like ssh keys, passwords, etc. The updater is usually called from CI/CD system (i.e., Github action), and the actual http call looks like `curl https://<server>/update/<task-name>/<access-key>`
 
 List of tasks defined in the configuration file, and each task has its custom section for the command.
+
+---
+[![Build Status](https://github.com/umputun/updater/workflows/build/badge.svg)](https://github.com/umputun/updater/actions) &nbsp;[![Coverage Status](https://coveralls.io/repos/github/umputun/updater/badge.svg?branch=master)](https://coveralls.io/github/umputun/updater?branch=master) 
 
 
 Example of `updater.yml`:
@@ -25,7 +30,7 @@ tasks:
 
 By default the update call synchronous but can be switched to non-blocking mode with `async` query parameter, i.e. `curl https://example.com/update/remark42-site/super-seecret-key?async=1`
 
-## install
+## Install
 
 Updater distributed as multi-arch docker container as well as binary files for multiple platforms. Container has the docker client preinstalled to allow the typical "docker pull & docker restart" update sequence.
 
@@ -90,11 +95,11 @@ services:
       reproxy.route: '^/(.*)'
 ```
 
-## other use cases
+## Other use cases
 
 The main goal of this utility is to update containers; however, all it does is the remote activation of predefined commands. Such command can do anything user like, not just "docker pull && docker restart." For instance, it can be used to schedule remote jobs from some central orchestrator, run remote cleanup jobs, etc.
 
-## all parameters
+## All parameters
 
 ```
   -f, --file=   config file (default: updater.yml) [$CONF]
