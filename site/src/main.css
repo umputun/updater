@@ -9,3 +9,102 @@ html {
 .docs-nav a ~ ul {
 	@apply mt-1 mb-2;
 }
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata,
+.token.punctuation {
+	@apply text-gray-700 dark:text-gray-300;
+}
+
+.token.punctuation {
+	@apply text-green-800 dark:text-green-200;
+}
+
+.token.delimiter.important,
+.token.selector .parent,
+.token.tag,
+.token.tag .token.punctuation {
+	@apply text-green-600 dark:text-green-300 font-semibold;
+}
+
+.token.attr-name,
+.token.boolean,
+.token.boolean.important,
+.token.number,
+.token.constant,
+.token.selector .token.attribute {
+	@apply font-normal text-blue-600 dark:text-blue-500;
+}
+
+.token.class-name,
+.token.key,
+.token.parameter,
+.token.property,
+.token.property-access,
+.token.variable {
+	@apply text-blue-600 dark:text-blue-400;
+}
+
+.token.attr-value,
+.token.inserted,
+.token.color,
+.token.selector .token.value,
+.token.string,
+.token.string .token.url-link {
+	@apply text-green-800 dark:text-green-300 font-normal;
+}
+
+.token.builtin,
+.token.keyword-array,
+.token.package,
+.token.regex {
+	color: #af00af;
+}
+
+.token.function,
+.token.selector .token.class,
+.token.selector .token.id {
+	color: #7c00aa;
+}
+
+.token.atrule .token.rule,
+.token.combinator,
+.token.keyword,
+.token.operator,
+.token.pseudo-class,
+.token.pseudo-element,
+.token.selector,
+.token.unit {
+	@apply text-pink-700 dark:text-pink-300;
+}
+
+.token.deleted,
+.token.important {
+	color: #c22f2e;
+}
+
+.token.keyword-this,
+.token.this {
+	color: #005a8e;
+}
+
+.token.important,
+.token.keyword-this,
+.token.this,
+.token.bold {
+	font-weight: bold;
+}
+
+.token.delimiter.important {
+	font-weight: inherit;
+}
+
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
