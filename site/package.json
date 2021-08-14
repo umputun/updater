@@ -1,7 +1,7 @@
 {
-	"name": "reproxy",
+	"name": "updater",
 	"version": "0.0.0",
-	"repository": "https://github.com/umputun/reproxy/site",
+	"repository": "https://github.com/umputun/updater/site",
 	"author": "Pavel Mineev <pavel@mineev.me>",
 	"license": "MIT",
 	"private": true,
