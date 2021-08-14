@@ -23,7 +23,8 @@ tasks:
     command: |
       echo "update remark42-site"
       docker pull ghcr.io/umputun/remark24-site:master
-      docker restart remark42-site
+      docker rm -f remark42-site
+      docker run -d --name=remark42-site up -d
 
   - name: feed-master
     command: |
@@ -97,6 +98,27 @@ services:
     labels:
       reproxy.server: 'jess.umputun.com'
       reproxy.route: '^/(.*)'
+```
+
+## Working with docker-compose
+
+For a simple container, started with all the parameters manually, the typical update sequence can be as simple as "kill container and recreate it", however docker compose-based container can be a little trickier. If user runs updater directly on the host (not from a container) the update command can be as trivial as "docker-compose pull <service> && docker-compose up -d <service>". In case if updater runs from a container the simplest way to do the same is "ssh user@bridge-ip docker-compose ...". To simplify the process the open-ssh already preinstalled. 
+
+This is an example of ssh-based `updater.yml`
+
+```yaml
+tasks:
+
+  - name: remark42-site
+    command: |
+      echo "update remark42-site with compose"
+      ssh app@172.17.42.1 "cd /srv && docker-compose pull remark42-site && docker-compose up -d remark42-site"
+
+  - name: reproxy-site
+    command: |
+      echo "update reproxy-site"
+      ssh app@172.17.42.1 "cd /srv && docker-compose pull reproxy-site && docker-compose up -d reproxy-site"
+
 ```
 
 ## Other use cases
