@@ -5,9 +5,10 @@ const markdownIt = require('markdown-it')
 const markdownItAnchor = require('markdown-it-anchor')
 const toc = require('@thedigitalman/eleventy-plugin-toc-a11y')
 const fns = require('date-fns')
+const syntaxHighlight = require('@11ty/eleventy-plugin-syntaxhighlight')
 
 function getVersion() {
-	return `reproxy-${Date.now()}`
+	return `updater-${Date.now()}`
 }
 
 function transformHTML(content, outputPath) {
@@ -53,6 +54,7 @@ module.exports = (config) => {
 	config.addShortcode('version', getVersion)
 
 	// Pluigns
+	config.addPlugin(syntaxHighlight)
 	config.addPlugin(toc, {
 		tags: ['h2', 'h3'],
 		heading: false,
