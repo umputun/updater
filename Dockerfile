@@ -21,7 +21,12 @@ RUN \
 
 
 FROM ghcr.io/umputun/baseimage/app:v1.7.0
-RUN apk add docker
+RUN apk add docker openssh-client
+RUN  mkdir -p /home/root/.ssh && \
+    echo "StrictHostKeyChecking=no" > /home/root/.ssh/config && \
+    chown -R root:root /home/root/.ssh/ && \
+    chmod 600 /home/root/.ssh/* && \
+    chmod 700 /home/root/.ssh
 COPY --from=build /build/updater /srv/updater
 WORKDIR /srv
 ENTRYPOINT ["/srv/updater"]
