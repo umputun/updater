@@ -1,6 +1,6 @@
 {
-	"name": "Reproxy",
-	"short_name": "Reproxy",
+	"name": "Updater",
+	"short_name": "Updater",
 	"icons": [
 		{
 			"src": "touch-icon.png",
@@ -8,6 +8,6 @@
 		}
 	],
 	"background_color": "#ffffff",
-	"theme_color": "#FF7A00",
+	"theme_color": "#1053FE",
 	"display": "fullscreen"
 }
