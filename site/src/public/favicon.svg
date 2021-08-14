@@ -1,1 +1,4 @@
-<svg width="16" height="16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 8l7-3v11L2 8z" fill="#FF7A00"/><path d="M15 8l-6 3V0l6 8z" fill="#FFB35A"/></svg>
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+	<style>@media(prefers-color-scheme:dark){.icon{color: #fff!important;}}</style>
+	<path class="icon" fill-rule="evenodd" clip-rule="evenodd" d="M21 19H50.5161L50.5161 63.2123H34.7675C33.904 63.2123 33.4465 64.2331 34.021 64.8777L63.428 97.8693C63.8256 98.3154 64.5233 98.3154 64.9209 97.8693L94.3279 64.8777C94.9024 64.2331 94.4449 63.2123 93.5814 63.2123H77.6128L77.6129 19H107.371V64.7258H107.358C107.366 65.0876 107.371 65.4505 107.371 65.8145C107.371 89.6652 88.0362 109 64.1855 109C40.3348 109 21 89.6652 21 65.8145C21 65.4505 21.0045 65.0876 21.0135 64.7258H21V19Z" fill="#1053FE"/>
+</svg>
