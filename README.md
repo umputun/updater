@@ -102,7 +102,7 @@ services:
 
 ## Working with docker-compose
 
-For a simple container, started with all the parameters manually, the typical update sequence can be as simple as "kill container and recreate it", however docker compose-based container can be a little trickier. If user runs updater directly on the host (not from a container) the update command can be as trivial as "docker-compose pull <service> && docker-compose up -d <service>". In case if updater runs from a container the simplest way to do the same is "ssh user@bridge-ip docker-compose ...". To simplify the process the open-ssh already preinstalled. 
+For a simple container, started with all the parameters manually, the typical update sequence can be as simple as "kill container and recreate it", however docker compose-based container can be a little trickier. If user runs updater directly on the host (not from a container) the update command can be as trivial as "docker-compose pull <service> && docker-compose up -d <service>". In case if updater runs from a container the simplest way to do the same is "ssh user@bridge-ip docker-compose ...". To simplify the process the openssh-client already preinstalled. 
 
 This is an example of ssh-based `updater.yml`
 
