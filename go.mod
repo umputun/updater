@@ -8,6 +8,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.3
 	github.com/go-pkgz/lgr v0.10.4
 	github.com/go-pkgz/rest v1.11.0
+	github.com/go-pkgz/syncs v1.1.1
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0

@@ -21,6 +21,9 @@ github.com/go-pkgz/lgr
 ## explicit
 github.com/go-pkgz/rest
 github.com/go-pkgz/rest/logger
+# github.com/go-pkgz/syncs v1.1.1
+## explicit
+github.com/go-pkgz/syncs
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.1

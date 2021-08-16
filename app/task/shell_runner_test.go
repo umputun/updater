@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -64,9 +65,18 @@ func TestShellRunner_RunMultiLine(t *testing.T) {
 
 }
 func TestShellRunner_RunBatch(t *testing.T) {
-	sr := ShellRunner{BatchMode: true}
+	sr := ShellRunner{BatchMode: true, TimeOut: time.Second}
 	lw := bytes.NewBuffer(nil)
 	err := sr.Run(context.Background(), "echo 123\necho 345", lw)
 	require.NoError(t, err)
 	assert.Equal(t, "123\n345\n", lw.String())
+}
+
+func TestShellRunner_RunBatchTimeOut(t *testing.T) {
+	sr := ShellRunner{BatchMode: true, TimeOut: time.Millisecond * 100}
+	lw := bytes.NewBuffer(nil)
+	st := time.Now()
+	err := sr.Run(context.Background(), "sleep 1 && sleep 1 && echo 123\necho 345", lw)
+	require.Error(t, err)
+	assert.True(t, time.Since(st) < time.Second*2)
 }

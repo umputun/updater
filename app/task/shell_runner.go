@@ -9,6 +9,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
+	"time"
 
 	log "github.com/go-pkgz/lgr"
 	"github.com/hashicorp/go-multierror"
@@ -18,6 +20,8 @@ import (
 // ShellRunner executes commands with shell
 type ShellRunner struct {
 	BatchMode bool
+	Limiter   sync.Locker
+	TimeOut   time.Duration
 }
 
 // Run command in shell with provided logger
@@ -26,13 +30,18 @@ func (s *ShellRunner) Run(ctx context.Context, command string, logWriter io.Writ
 		return nil
 	}
 
+	if s.Limiter != nil {
+		s.Limiter.Lock()
+		defer s.Limiter.Unlock()
+	}
+
 	command = strings.TrimSpace(command)
 	if s.BatchMode {
 		batchFile, err := s.prepBatch(command)
 		if err != nil {
 			return fmt.Errorf("can't prepare batch: %w", err)
 		}
-		return s.runBatch(ctx, batchFile, logWriter)
+		return s.runBatch(batchFile, logWriter, s.TimeOut)
 	}
 
 	execCmd := func(command string) error {
@@ -69,8 +78,10 @@ func (s *ShellRunner) Run(ctx context.Context, command string, logWriter io.Writ
 	return nil
 }
 
-func (s *ShellRunner) runBatch(ctx context.Context, batchFile string, logWriter io.Writer) error {
+func (s *ShellRunner) runBatch(batchFile string, logWriter io.Writer, timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer func() {
+		cancel()
 		if e := os.Remove(batchFile); e != nil {
 			log.Printf("[WARN] can't remove temp batch file %s, %v", batchFile, e)
 		}
