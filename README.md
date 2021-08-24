@@ -24,7 +24,7 @@ tasks:
       echo "update remark42-site"
       docker pull ghcr.io/umputun/remark24-site:master
       docker rm -f remark42-site
-      docker run -d --name=remark42-site up -d
+      docker run -d --name=remark42-site
 
   - name: feed-master
     command: |
