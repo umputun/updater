@@ -26,7 +26,7 @@ var opts struct {
 	Batch     bool          `short:"b" long:"batch" description:"batch mode for multi-line scripts"`
 	Limit     int           `long:"limit"  default:"10" description:"limit how many concurrent update can be running"`
 	TimeOut   time.Duration `long:"timeout"  default:"1m" description:"for how long update task can be running"`
-	Dbg       bool          `long:"dbg" description:"show debug info"`
+	Dbg       bool          `long:"dbg" env:"DEBUG" description:"show debug info"`
 }
 
 func main() {
