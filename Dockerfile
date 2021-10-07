@@ -33,7 +33,7 @@ RUN mkdir -p /home/app/.ssh && \
 RUN mkdir -p /root/.ssh && \
     echo "StrictHostKeyChecking=no" > /root/.ssh/config && \
     echo "LogLevel=quiet" >> /root/.ssh/config && \
-    chown -R app:app /root/.ssh/ && \
+    chown -R root:root /root/.ssh/ && \
     chmod 600 /root/.ssh/* && \
     chmod 700 /root/.ssh
 
