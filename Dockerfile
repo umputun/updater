@@ -31,14 +31,6 @@ RUN \
   chmod 600 /home/app/.ssh/* && \
   chmod 700 /home/app/.ssh
 
-RUN \
-  mkdir -p /root/.ssh && \
-  echo "StrictHostKeyChecking=no" > /root/.ssh/config && \
-  echo "LogLevel=quiet" >> /root/.ssh/config && \
-  chown -R root:root /root/.ssh/ && \
-  chmod 600 /root/.ssh/* && \
-  chmod 700 /root/.ssh
-
 COPY --from=build /build/updater /srv/updater
 WORKDIR /srv
 CMD ["/srv/updater"]
