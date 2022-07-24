@@ -118,7 +118,22 @@ tasks:
     command: |
       echo "update reproxy-site"
       ssh app@172.17.42.1 "cd /srv && docker-compose pull reproxy-site && docker-compose up -d reproxy-site"
+```
 
+### Creating user for SSH connection from updater
+
+```shell
+# updater container uses user app so it would be convinient to connect using the same name
+sudo useradd -m -d /home/app -s /bin/bash app
+sudo usermod -a -G docker app
+sudo su - app
+ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_rsa -C updater
+mv .ssh/id_rsa.pub .ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+# proper user and group for private key to be used inside the container
+chown 1001:1001 ~/.ssh/id_rsa
+logout
+# then attach /home/app/.ssh/id_rsa to a /home/app/.ssh/id_rsa on the container where updater runs if necessary
 ```
 
 ## Other use cases
