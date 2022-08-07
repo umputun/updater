@@ -93,21 +93,58 @@ Adds the HTTP Deprecation response header, see [draft-dalal-deprecation-header-0
 BasicAuth middleware requires basic auth and matches user & passwd with client-provided checker. In case if no basic auth headers returns
 `StatusUnauthorized`, in case if checker failed - `StatusForbidden`
 
-## Rewrite middleware
+### Rewrite middleware
 
 Rewrites requests with from->to rule. Supports regex (like nginx) and prevents multiple rewrites. For example `Rewrite("^/sites/(.*)/settings/$", "/sites/settings/$1")` will change request's URL from `/sites/id1/settings/` to `/sites/settings/id1`
 
-## NoCache middleware
+### NoCache middleware
 
 Sets a number of HTTP headers to prevent a router (handler's) response from being cached by an upstream proxy and/or client.
 
-## Headers middleware
+### Headers middleware
 
 Sets headers (passed as key:value) to requests. I.e. `rest.Headers("Server:MyServer", "X-Blah:Foo")`
 
-## Gzip middleware
+### Gzip middleware
 
 Compresses response with gzip.
+
+### RealIP middleware
+
+RealIP is a middleware that sets a http.Request's RemoteAddr to the results of parsing either the X-Forwarded-For or X-Real-IP headers.
+
+### Maybe middleware
+
+Maybe middleware will allow you to change the flow of the middleware stack execution depending on return
+value of maybeFn(request). This is useful for example if you'd like to skip a middleware handler if
+a request does not satisfy the maybeFn logic.
+
+### Benchmarks middleware
+
+Benchmarks middleware allows to measure the time of request handling, number of request per second and report aggregated metrics. This middleware keeps track of the request in the memory and keep up to 900 points (15 minutes, data-point per second).
+
+In order to retrieve the data user should call `Stats(d duration)` method. duration is the time window for which the benchmark data should be returned. It can be any duration from 1s to 15m. Note: all the time data is in microseconds.
+
+example with chi router:
+
+```go
+    router := chi.NewRouter()
+	bench = rest.NewBenchmarks()
+	router.Use(bench.Middleware)
+	...
+	router.Get("/bench", func(w http.ResponseWriter, r *http.Request) {
+        resp := struct {
+            OneMin     rest.BenchmarkStats `json:"1min"`
+            FiveMin    rest.BenchmarkStats `json:"5min"`
+            FifteenMin rest.BenchmarkStats `json:"15min"`
+        }{
+            bench.Stats(time.Minute),
+            bench.Stats(time.Minute * 5),
+            bench.Stats(time.Minute * 15),
+        }
+        render.JSON(w, r, resp) 		
+    })
+```
 
 ## Helpers
 
@@ -119,3 +156,22 @@ Compresses response with gzip.
 - `rest.SendErrorJSON` - makes `{error: blah, details: blah}` json body and responds with given error code. Also, adds context to the logged message
 - `rest.NewErrorLogger` - creates a struct providing shorter form of logger call
 - `rest.FileServer` - creates a file server for static assets with directory listing disabled
+- `realip.Get` - returns client's IP address
+- `rest.ParseFromTo` - parses "from" and "to" request's query params with various formats
+
+## Profiler
+
+Profiler is a convenient subrouter used for mounting net/http/pprof, i.e.
+
+```go
+ func MyService() http.Handler {
+   r := chi.NewRouter()
+   // ..middlewares
+   r.Mount("/debug", middleware.Profiler())
+   // ..routes
+   return r
+ }
+```
+
+It exposes a bunch of `/pprof/*` endpoints as well as `/vars`. Builtin support for `onlyIps` allows restricting access, which is important if it runs on a publicly exposed port. However, counting on IP check only is not that reliable way to limit request and for production use it would be better to add some sort of auth (for example provided `BasicAuth` middleware) or run with a separate http server, exposed to internal ip/port only.
+
