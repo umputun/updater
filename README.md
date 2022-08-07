@@ -1,5 +1,5 @@
 <div align="center">
-  <img class="logo" src="https://raw.githubusercontent.com/umputun/updater/master/site/src/logo-bg.svg" width="355px" height="142px" alt="Updater | Simple Remote Updater"/>
+  <img class="logo" src="https://raw.githubusercontent.com/umputun/updater/master/site/logo-bg.svg" width="355px" height="142px" alt="Updater | Simple Remote Updater"/>
 </div>
 
 Updater is a simple web-hook-based receiver executing things via HTTP requests and invoking remote updates without exposing any sensitive info, like ssh keys, passwords, etc. The updater is usually called from CI/CD system (i.e., Github action), and the actual http call looks like `curl https://<server>/update/<task-name>/<access-key>`. Alternatively, the updater can be called with POST method and the payload can be passed as JSON, i.e. `curl -X POST -d '{"task":"remark42-site", "secret":"123456"}' https://example.com/update`
