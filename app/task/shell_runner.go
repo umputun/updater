@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -99,7 +98,7 @@ func (s *ShellRunner) prepBatch(cmd string) (batchFile string, err error) {
 	var script []string
 	script = append(script, "#!bin/sh")
 	script = append(script, strings.Split(cmd, "\n")...)
-	fh, e := ioutil.TempFile("/tmp", "updater")
+	fh, e := os.CreateTemp("/tmp", "updater")
 	if e != nil {
 		return "", errors.Wrap(e, "failed to prep batch")
 	}
@@ -108,7 +107,7 @@ func (s *ShellRunner) prepBatch(cmd string) (batchFile string, err error) {
 		fname := fh.Name()
 		errs = multierror.Append(errs, fh.Sync())
 		errs = multierror.Append(errs, fh.Close())
-		errs = multierror.Append(errs, os.Chmod(fname, 0755)) //nolint
+		errs = multierror.Append(errs, os.Chmod(fname, 0755)) // nolint
 		if errs.ErrorOrNil() != nil {
 			log.Printf("[WARN] can't properly close %s, %v", fname, errs.Error())
 		}

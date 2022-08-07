@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/didip/tollbooth/v6"
+	"github.com/didip/tollbooth/v7"
 	"github.com/didip/tollbooth_chi"
 	"github.com/go-chi/chi/v5"
 	log "github.com/go-pkgz/lgr"
@@ -103,7 +103,7 @@ func (s *Rest) taskPostCtrl(w http.ResponseWriter, r *http.Request) {
 	s.execTask(w, r, req.Secret, req.Task, req.Async)
 }
 
-func (s *Rest) execTask(w http.ResponseWriter, r *http.Request, secret string, taskName string, isAsync bool) {
+func (s *Rest) execTask(w http.ResponseWriter, r *http.Request, secret, taskName string, isAsync bool) {
 	if subtle.ConstantTimeCompare([]byte(secret), []byte(s.SecretKey)) != 1 {
 		http.Error(w, "rejected", http.StatusForbidden)
 		return
