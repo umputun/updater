@@ -2,7 +2,7 @@
   <img class="logo" src="https://raw.githubusercontent.com/umputun/updater/master/site/src/logo-bg.svg" width="355px" height="142px" alt="Updater | Simple Remote Updater"/>
 </div>
 
-Updater is a simple web-hook-based receiver executing things via HTTP requests and invoking remote updates without exposing any sensitive info, like ssh keys, passwords, etc. The updater is usually called from CI/CD system (i.e., Github action), and the actual http call looks like `curl https://<server>/update/<task-name>/<access-key>`
+Updater is a simple web-hook-based receiver executing things via HTTP requests and invoking remote updates without exposing any sensitive info, like ssh keys, passwords, etc. The updater is usually called from CI/CD system (i.e., Github action), and the actual http call looks like `curl https://<server>/update/<task-name>/<access-key>`. Alternatively, the updater can be called with POST method and the payload can be passed as JSON, i.e. `curl -X POST -d '{"task":"remark42-site", "secret":"123456"}' https://example.com/update`
 
 List of tasks defined in the configuration file, and each task has its custom section for the command.
 
@@ -33,7 +33,7 @@ tasks:
       docker restart feed-master
 ```
 
-By default the update call synchronous but can be switched to non-blocking mode with `async` query parameter, i.e. `curl https://example.com/update/remark42-site/super-seecret-key?async=1`
+By default the update call synchronous but can be switched to non-blocking mode with `async` query parameter, i.e. `curl https://example.com/update/remark42-site/super-seecret-key?async=1`. To request the async update with `POST`, `async=true` should be used in the payload, i.e. `curl -X POST -d '{"task":"remark42-site", "secret":"123456", "async":true}' https://example.com/update`
 
 ## Install
 
@@ -128,11 +128,14 @@ The main goal of this utility is to update containers; however, all it does is t
 ## All parameters
 
 ```
-  -f, --file=   config file (default: updater.yml) [$CONF]
-  -l, --listen= listen on host:port (default: localhost:8080) [$LISTEN]
-  -k, --key=    secret key [$KEY]
-  -b, --batch   batch mode for multi-line scripts
-      --dbg     show debug info
+  -f, --file=         config file (default: updater.yml) [$CONF]
+  -l, --listen=       listen on host:port (default: localhost:8080) [$LISTEN]
+  -k, --key=          secret key [$KEY]
+  -b, --batch         batch mode for multi-line scripts
+      --limit=        limit how many concurrent update can be running (default: 10)
+      --timeout=      for how long update task can be running (default: 1m)
+      --update-delay= delay between updates (default: 1s)
+      --dbg           show debug info [$DEBUG]
 
 Help Options:
   -h, --help    Show this help message
