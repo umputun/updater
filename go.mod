@@ -3,7 +3,7 @@ module github.com/umputun/updater
 go 1.17
 
 require (
-	github.com/didip/tollbooth/v6 v6.1.2
+	github.com/didip/tollbooth/v7 v7.0.0
 	github.com/didip/tollbooth_chi v0.0.0-20220719025231-d662a7f6928f
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-pkgz/lgr v0.10.4
@@ -18,10 +18,10 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.0 // indirect
-	github.com/didip/tollbooth/v7 v7.0.0 // indirect
 	github.com/go-pkgz/expirable-cache v0.1.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/kr/pretty v0.1.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
+	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
