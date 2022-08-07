@@ -1,30 +1,32 @@
 # github.com/davecgh/go-spew v1.1.0
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/didip/tollbooth/v6 v6.1.1
+# github.com/didip/tollbooth/v7 v7.0.0
 ## explicit; go 1.12
-github.com/didip/tollbooth/v6
-github.com/didip/tollbooth/v6/errors
-github.com/didip/tollbooth/v6/libstring
-github.com/didip/tollbooth/v6/limiter
-# github.com/didip/tollbooth_chi v0.0.0-20200828173446-a7173453ea21
+github.com/didip/tollbooth/v7
+github.com/didip/tollbooth/v7/errors
+github.com/didip/tollbooth/v7/internal/time/rate
+github.com/didip/tollbooth/v7/libstring
+github.com/didip/tollbooth/v7/limiter
+# github.com/didip/tollbooth_chi v0.0.0-20220719025231-d662a7f6928f
 ## explicit; go 1.14
 github.com/didip/tollbooth_chi
-# github.com/go-chi/chi/v5 v5.0.4
+# github.com/go-chi/chi/v5 v5.0.7
 ## explicit; go 1.14
 github.com/go-chi/chi/v5
-# github.com/go-pkgz/expirable-cache v0.0.3
+# github.com/go-pkgz/expirable-cache v0.1.0
 ## explicit; go 1.14
 github.com/go-pkgz/expirable-cache
 # github.com/go-pkgz/lgr v0.10.4
 ## explicit; go 1.15
 github.com/go-pkgz/lgr
-# github.com/go-pkgz/rest v1.11.0
-## explicit; go 1.15
+# github.com/go-pkgz/rest v1.15.6
+## explicit; go 1.16
 github.com/go-pkgz/rest
 github.com/go-pkgz/rest/logger
-# github.com/go-pkgz/syncs v1.1.1
-## explicit
+github.com/go-pkgz/rest/realip
+# github.com/go-pkgz/syncs v1.2.0
+## explicit; go 1.16
 github.com/go-pkgz/syncs
 # github.com/hashicorp/errwrap v1.1.0
 ## explicit
@@ -32,22 +34,23 @@ github.com/hashicorp/errwrap
 # github.com/hashicorp/go-multierror v1.1.1
 ## explicit; go 1.13
 github.com/hashicorp/go-multierror
+# github.com/kr/pretty v0.1.0
+## explicit
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 ## explicit
 github.com/pmezard/go-difflib/difflib
-# github.com/stretchr/testify v1.7.0
+# github.com/stretchr/testify v1.7.1
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/umputun/go-flags v1.5.1
 ## explicit; go 1.12
 github.com/umputun/go-flags
-# golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac
+# gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127
 ## explicit
-golang.org/x/time/rate
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2

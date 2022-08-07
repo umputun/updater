@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -81,4 +82,42 @@ func TestRest_taskCtrlAsync(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.True(t, time.Since(st) < 100*time.Millisecond, time.Since(st))
 	time.Sleep(100 * time.Millisecond)
+}
+
+func TestRest_taskPostCtrl(t *testing.T) {
+	conf := &mocks.ConfigMock{GetTaskCommandFunc: func(name string) (string, bool) {
+		return "echo " + name, true
+	}}
+
+	runner := &mocks.RunnerMock{RunFunc: func(ctx context.Context, command string, logWriter io.Writer) error {
+		return nil
+	}}
+
+	srv := Rest{Listen: "localhost:54009", Version: "v1", Config: conf, SecretKey: "12345",
+		Runner: runner, UpdateDelay: time.Millisecond * 200}
+
+	ts := httptest.NewServer(srv.router())
+	defer ts.Close()
+
+	st := time.Now()
+	resp, err := http.Post(ts.URL+"/update", "application/json", strings.NewReader(`{"task":"task1","secret":"12345"}`))
+
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	resp, err = http.Post(ts.URL+"/update", "application/json", strings.NewReader(`{"task":"task2","secret":"12345"}`))
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	resp, err = http.Post(ts.URL+"/update", "application/json", strings.NewReader(`{"task":"task2","secret":"12345bad"}`))
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+	assert.True(t, time.Since(st) >= time.Millisecond*200)
+	assert.Equal(t, 2, len(conf.GetTaskCommandCalls()))
+	assert.Equal(t, "task1", conf.GetTaskCommandCalls()[0].Name)
+	assert.Equal(t, "task2", conf.GetTaskCommandCalls()[1].Name)
+
+	assert.Equal(t, 2, len(runner.RunCalls()))
+	assert.Equal(t, "echo task1", runner.RunCalls()[0].Command)
+	assert.Equal(t, "echo task2", runner.RunCalls()[1].Command)
 }

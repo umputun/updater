@@ -3,11 +3,12 @@ package server
 import (
 	"context"
 	"crypto/subtle"
+	"encoding/json"
 	"io"
 	"net/http"
 	"time"
 
-	"github.com/didip/tollbooth/v6"
+	"github.com/didip/tollbooth/v7"
 	"github.com/didip/tollbooth_chi"
 	"github.com/go-chi/chi/v5"
 	log "github.com/go-pkgz/lgr"
@@ -70,19 +71,40 @@ func (s *Rest) router() http.Handler {
 	router.Use(rest.AppInfo("updater", "umputun", s.Version))
 	router.Use(rest.Ping)
 	router.Use(tollbooth_chi.LimitHandler(tollbooth.NewLimiter(10, nil)))
+	if s.UpdateDelay > 0 {
+		router.Use(s.slowMiddleware)
+	}
 
 	router.Get("/update/{task}/{key}", s.taskCtrl)
+	router.Post("/update", s.taskPostCtrl)
 	return router
 }
 
 // GET /update/{task}/{key}?async=[0|1]
 func (s *Rest) taskCtrl(w http.ResponseWriter, r *http.Request) {
-	time.Sleep(s.UpdateDelay) // slow down the request
 	taskName := chi.URLParam(r, "task")
 	key := chi.URLParam(r, "key")
 	isAsync := r.URL.Query().Get("async") == "1" || r.URL.Query().Get("async") == "yes"
+	s.execTask(w, r, key, taskName, isAsync)
+}
 
-	if subtle.ConstantTimeCompare([]byte(key), []byte(s.SecretKey)) != 1 {
+// POST /update
+func (s *Rest) taskPostCtrl(w http.ResponseWriter, r *http.Request) {
+	req := struct {
+		Task   string `json:"task"`
+		Secret string `json:"secret"`
+		Async  bool   `json:"async"`
+	}{}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "failed to decode request", http.StatusBadRequest)
+		return
+	}
+	s.execTask(w, r, req.Secret, req.Task, req.Async)
+}
+
+func (s *Rest) execTask(w http.ResponseWriter, r *http.Request, secret, taskName string, isAsync bool) {
+	if subtle.ConstantTimeCompare([]byte(secret), []byte(s.SecretKey)) != 1 {
 		http.Error(w, "rejected", http.StatusForbidden)
 		return
 	}
@@ -112,4 +134,12 @@ func (s *Rest) taskCtrl(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rest.RenderJSON(w, rest.JSON{"updated": "ok", "task": taskName})
+}
+
+// middleware for slowing requests downs
+func (s *Rest) slowMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		time.Sleep(s.UpdateDelay)
+		next.ServeHTTP(w, r)
+	})
 }
