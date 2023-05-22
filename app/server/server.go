@@ -35,7 +35,7 @@ type Config interface {
 
 // Runner executes commands
 type Runner interface {
-	Run(ctx context.Context, command string, logWriter io.Writer) error
+	Run(ctx context.Context, command string, logWriter io.Writer) (string, error)
 }
 
 // Run starts http server and closes on context cancellation
@@ -119,7 +119,7 @@ func (s *Rest) execTask(w http.ResponseWriter, r *http.Request, secret, taskName
 
 	if isAsync {
 		go func() {
-			if err := s.Runner.Run(context.Background(), command, log.ToWriter(log.Default(), ">")); err != nil {
+			if _, err := s.Runner.Run(context.Background(), command, log.ToWriter(log.Default(), ">")); err != nil {
 				log.Printf("[WARN] failed command")
 				return
 			}
@@ -127,13 +127,20 @@ func (s *Rest) execTask(w http.ResponseWriter, r *http.Request, secret, taskName
 		rest.RenderJSON(w, rest.JSON{"submitted": "ok", "task": taskName})
 		return
 	}
-
-	if err := s.Runner.Run(r.Context(), command, log.ToWriter(log.Default(), ">")); err != nil {
-		http.Error(w, "failed command", http.StatusInternalServerError)
-		return
-	}
-
-	rest.RenderJSON(w, rest.JSON{"updated": "ok", "task": taskName})
+    //var msg string
+    msg, err := s.Runner.Run(r.Context(), command, log.ToWriter(log.Default(), ">"));
+    if err != nil {
+        log.Printf(msg)
+        http.Error(w, "failed command", http.StatusInternalServerError)
+        return
+    }
+// 	if msg, err := s.Runner.Run(r.Context(), command, log.ToWriter(log.Default(), ">")); err != nil {
+// 	    log.Printf(msg)
+// 		http.Error(w, "failed command", http.StatusInternalServerError)
+// 		return
+// 	}
+    log.Printf(msg)
+	rest.RenderJSON(w, rest.JSON{"updated": "ok", "task": taskName, "message": msg})
 }
 
 // middleware for slowing requests downs

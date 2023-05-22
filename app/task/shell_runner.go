@@ -24,9 +24,9 @@ type ShellRunner struct {
 }
 
 // Run command in shell with provided logger
-func (s *ShellRunner) Run(ctx context.Context, command string, logWriter io.Writer) error {
+func (s *ShellRunner) Run(ctx context.Context, command string, logWriter io.Writer)(string, error) {
 	if command == "" {
-		return nil
+		return "", nil
 	}
 
 	if s.Limiter != nil {
@@ -38,12 +38,12 @@ func (s *ShellRunner) Run(ctx context.Context, command string, logWriter io.Writ
 	if s.BatchMode {
 		batchFile, err := s.prepBatch(command)
 		if err != nil {
-			return fmt.Errorf("can't prepare batch: %w", err)
+			return "", fmt.Errorf("can't prepare batch: %w", err)
 		}
-		return s.runBatch(batchFile, logWriter, s.TimeOut)
+		return "", s.runBatch(batchFile, logWriter, s.TimeOut)
 	}
 
-	execCmd := func(command string) error {
+	execCmd := func(command string) (string, error) {
 		log.Printf("[INFO] execute %q", command)
 		var suppressError bool
 		if command[0] == '@' {
@@ -52,29 +52,33 @@ func (s *ShellRunner) Run(ctx context.Context, command string, logWriter io.Writ
 			log.Printf("[DEBUG] suppress error for %s", command)
 		}
 		cmd := exec.CommandContext(ctx, "sh", "-c", command) // nolint
-		cmd.Stdout = logWriter
+		var outb bytes.Buffer
+		cmd.Stdout = &outb
 		cmd.Stderr = logWriter
 		cmd.Stdin = os.Stdin
 		if err := cmd.Run(); err != nil {
 			if suppressError {
 				log.Printf("[WARN] suppressed error executing %q, %v", command, err)
-				return nil
+				return outb.String(), nil
 			}
-			return fmt.Errorf("failed to execute %s: %w", command, err)
+			return "", fmt.Errorf("failed to execute %s: %w", command, err)
 		}
-		return nil
+		res := outb.String()
+		log.Printf("RES: ");
+		log.Printf(res);
+		return res, nil
 	}
-
+    var msg string
 	for _, c := range strings.Split(command, "\n") {
 		if c = strings.TrimSpace(c); c == "" {
 			continue
 		}
-		if err := execCmd(c); err != nil {
-			return err
+		if msg, err := execCmd(c); err != nil {
+			return msg, err
 		}
 	}
 
-	return nil
+	return msg, nil
 }
 
 func (s *ShellRunner) runBatch(batchFile string, logWriter io.Writer, timeout time.Duration) error {
