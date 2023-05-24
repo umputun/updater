@@ -35,7 +35,7 @@ type Config interface {
 
 // Runner executes commands
 type Runner interface {
-	Run(ctx context.Context, command string, logWriter io.Writer) (string, error)
+	Run(ctx context.Context, command string, logWriter io.Writer) error
 }
 
 // Run starts http server and closes on context cancellation
@@ -77,7 +77,13 @@ func (s *Rest) router() http.Handler {
 
 	router.Get("/update/{task}/{key}", s.taskCtrl)
 	router.Post("/update", s.taskPostCtrl)
+	router.Get("/info/{uuid}", s.taskInfo)
 	return router
+}
+
+func (s *Rest) taskInfo(w http.ResponseWriter, r *http.Request) {
+    uuid := chi.URLParam(r, "uuid")
+    log.Printf(uuid)
 }
 
 // GET /update/{task}/{key}?async=[0|1]
@@ -119,7 +125,7 @@ func (s *Rest) execTask(w http.ResponseWriter, r *http.Request, secret, taskName
 
 	if isAsync {
 		go func() {
-			if _, err := s.Runner.Run(context.Background(), command, log.ToWriter(log.Default(), ">")); err != nil {
+			if err := s.Runner.Run(context.Background(), command, log.ToWriter(log.Default(), ">")); err != nil {
 				log.Printf("[WARN] failed command")
 				return
 			}
@@ -127,20 +133,13 @@ func (s *Rest) execTask(w http.ResponseWriter, r *http.Request, secret, taskName
 		rest.RenderJSON(w, rest.JSON{"submitted": "ok", "task": taskName})
 		return
 	}
-    //var msg string
-    msg, err := s.Runner.Run(r.Context(), command, log.ToWriter(log.Default(), ">"));
-    if err != nil {
-        log.Printf(msg)
-        http.Error(w, "failed command", http.StatusInternalServerError)
-        return
-    }
-// 	if msg, err := s.Runner.Run(r.Context(), command, log.ToWriter(log.Default(), ">")); err != nil {
-// 	    log.Printf(msg)
-// 		http.Error(w, "failed command", http.StatusInternalServerError)
-// 		return
-// 	}
-    log.Printf(msg)
-	rest.RenderJSON(w, rest.JSON{"updated": "ok", "task": taskName, "message": msg})
+
+	if err := s.Runner.Run(r.Context(), command, log.ToWriter(log.Default(), ">")); err != nil {
+		http.Error(w, "failed command", http.StatusInternalServerError)
+		return
+	}
+
+	rest.RenderJSON(w, rest.JSON{"updated": "ok", "task": taskName})
 }
 
 // middleware for slowing requests downs

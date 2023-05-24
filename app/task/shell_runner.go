@@ -23,14 +23,10 @@ type ShellRunner struct {
 	TimeOut   time.Duration
 }
 
-type Response struct {
-	Result string
-}
-
 // Run command in shell with provided logger
-func (s *ShellRunner) Run(ctx context.Context, command string, logWriter io.Writer)(string, error) {
+func (s *ShellRunner) Run(ctx context.Context, command string, logWriter io.Writer) error {
 	if command == "" {
-		return "", nil
+		return nil
 	}
 
 	if s.Limiter != nil {
@@ -42,51 +38,45 @@ func (s *ShellRunner) Run(ctx context.Context, command string, logWriter io.Writ
 	if s.BatchMode {
 		batchFile, err := s.prepBatch(command)
 		if err != nil {
-			return "", fmt.Errorf("can't prepare batch: %w", err)
+			return fmt.Errorf("can't prepare batch: %w", err)
 		}
-		return "", s.runBatch(batchFile, logWriter, s.TimeOut)
+		return s.runBatch(batchFile, logWriter, s.TimeOut)
 	}
 
-    var response Response
+	execCmd := func(command string) error {
+		log.Printf("[INFO] execute %q", command)
+		var suppressError bool
+		if command[0] == '@' {
+			command = command[1:]
+			suppressError = true
+			log.Printf("[DEBUG] suppress error for %s", command)
+		}
+		cmd := exec.CommandContext(ctx, "sh", "-c", command) // nolint
+        //var outb bytes.Buffer
+        //cmd.Stdout = &outb
+		cmd.Stdout = logWriter
+		cmd.Stderr = logWriter
+		cmd.Stdin = os.Stdin
+		if err := cmd.Run(); err != nil {
+			if suppressError {
+				log.Printf("[WARN] suppressed error executing %q, %v", command, err)
+				return nil
+			}
+			return fmt.Errorf("failed to execute %s: %w", command, err)
+		}
+		return nil
+	}
+
 	for _, c := range strings.Split(command, "\n") {
 		if c = strings.TrimSpace(c); c == "" {
 			continue
 		}
-		msg, err := s.execCmd(ctx, c, logWriter)
-		if err != nil {
-			return msg, err
+		if err := execCmd(c); err != nil {
+			return err
 		}
-		response.Result = msg
-		log.Printf("Command: "+command+" IN FOR: "+msg)
 	}
 
-	return response.Result, nil
-}
-
-func (s *ShellRunner) execCmd(ctx context.Context, command string, logWriter io.Writer) (string, error) {
-    log.Printf("[INFO] execute %q", command)
-    var suppressError bool
-    if command[0] == '@' {
-        command = command[1:]
-        suppressError = true
-        log.Printf("[DEBUG] suppress error for %s", command)
-    }
-    cmd := exec.CommandContext(ctx, "sh", "-c", command) // nolint
-    var outb bytes.Buffer
-    cmd.Stdout = &outb
-    cmd.Stderr = logWriter
-    cmd.Stdin = os.Stdin
-    if err := cmd.Run(); err != nil {
-        if suppressError {
-            log.Printf("[WARN] suppressed error executing %q, %v", command, err)
-            return outb.String(), nil
-        }
-        return "", fmt.Errorf("failed to execute %s: %w", command, err)
-    }
-    res := outb.String()
-    log.Printf("RES: "+res);
-
-    return res, nil
+	return nil
 }
 
 func (s *ShellRunner) runBatch(batchFile string, logWriter io.Writer, timeout time.Duration) error {
