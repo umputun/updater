@@ -15,6 +15,8 @@ import (
 
 	"github.com/umputun/updater/app/server"
 	"github.com/umputun/updater/app/task"
+
+	store "github.com/umputun/updater/app/store"
 )
 
 var revision string
@@ -28,6 +30,7 @@ var opts struct {
 	TimeOut     time.Duration `long:"timeout"  default:"1m" description:"for how long update task can be running"`
 	UpdateDelay time.Duration `long:"update-delay"  default:"1s" description:"delay between updates"`
 	Dbg         bool          `long:"dbg" env:"DEBUG" description:"show debug info"`
+	StoragePath string        `short:"s" long:"storage_path" default:"/var/tmp/jtrw_updater_s.db" description:"Storage Path"`
 }
 
 func main() {
@@ -63,7 +66,19 @@ func main() {
 	if err != nil {
 		log.Fatalf("[ERROR] can't load config %q, %v", opts.Config, err)
 	}
-	runner := &task.ShellRunner{BatchMode: opts.Batch, Limiter: syncs.NewSemaphore(opts.Limit), TimeOut: opts.TimeOut}
+
+	sec := store.Store {
+        StorePath: opts.StoragePath,
+    }
+
+    sec.JBolt = sec.NewStore()
+
+	runner := &task.ShellRunner{
+	    BatchMode: opts.Batch,
+	    Limiter: syncs.NewSemaphore(opts.Limit),
+	    TimeOut: opts.TimeOut,
+	    DataStore: sec,
+    }
 
 	srv := server.Rest{
 		Listen:      opts.Listen,

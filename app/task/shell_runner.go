@@ -14,6 +14,7 @@ import (
 	log "github.com/go-pkgz/lgr"
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
+	store "github.com/umputun/updater/app/store"
 )
 
 // ShellRunner executes commands with shell
@@ -21,6 +22,7 @@ type ShellRunner struct {
 	BatchMode bool
 	Limiter   sync.Locker
 	TimeOut   time.Duration
+	DataStore store.Store
 }
 
 // Run command in shell with provided logger
