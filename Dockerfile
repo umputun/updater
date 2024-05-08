@@ -4,7 +4,6 @@ ARG GIT_BRANCH
 ARG GITHUB_SHA
 ARG CI
 
-ENV GOFLAGS="-mod=vendor"
 ENV CGO_ENABLED=0
 
 ADD . /build
@@ -20,7 +19,11 @@ RUN \
     cd app && go build -o /build/updater -ldflags "-X main.revision=${version} -s -w"
 
 
-FROM ghcr.io/umputun/baseimage/app:v1.7.0
+FROM ghcr.io/umputun/baseimage/app:v1.13.0
+
+# enables automatic changelog generation by tools like Dependabot
+LABEL org.opencontainers.image.source="https://github.com/umputun/updater"
+
 RUN apk add docker openssh-client
 
 RUN \
