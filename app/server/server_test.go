@@ -29,7 +29,7 @@ func TestRest_taskCtrl(t *testing.T) {
 		return "echo " + name, true
 	}}
 
-	runner := &mocks.RunnerMock{RunFunc: func(ctx context.Context, command string, logWriter io.Writer) error {
+	runner := &mocks.RunnerMock{RunFunc: func(context.Context, string, io.Writer) error {
 		return nil
 	}}
 
@@ -66,7 +66,7 @@ func TestRest_taskCtrlAsync(t *testing.T) {
 		return "echo " + name, true
 	}}
 
-	runner := &mocks.RunnerMock{RunFunc: func(ctx context.Context, command string, logWriter io.Writer) error {
+	runner := &mocks.RunnerMock{RunFunc: func(context.Context, string, io.Writer) error {
 		time.Sleep(100 * time.Millisecond)
 		return nil
 	}}
@@ -89,7 +89,7 @@ func TestRest_taskPostCtrl(t *testing.T) {
 		return "echo " + name, true
 	}}
 
-	runner := &mocks.RunnerMock{RunFunc: func(ctx context.Context, command string, logWriter io.Writer) error {
+	runner := &mocks.RunnerMock{RunFunc: func(context.Context, string, io.Writer) error {
 		return nil
 	}}
 
