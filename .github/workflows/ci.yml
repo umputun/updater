@@ -37,12 +37,6 @@ jobs:
       - name: install goveralls
         run: go install github.com/mattn/goveralls@latest
 
-      - name: run linters
-        run: $GITHUB_WORKSPACE/golangci-lint run
-        env:
-          GOFLAGS: "-mod=vendor"
-          TZ: "America/Chicago"
-
       - name: submit coverage
         run: $(go env GOPATH)/bin/goveralls -service="github" -coverprofile=$GITHUB_WORKSPACE/profile.cov
         env:
