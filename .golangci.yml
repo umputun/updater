@@ -62,6 +62,3 @@ issues:
         - gosec
         - dupl
   exclude-use-default: false
-
-service:
-  golangci-lint-version: 1.39.x
