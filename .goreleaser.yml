@@ -19,10 +19,6 @@ builds:
 
 archives:
   - name_template: "{{.ProjectName}}_{{.Tag}}_{{.Os}}_{{.Arch}}"
-    replacements:
-      386: i386
-      amd64: x86_64
-      darwin: macos
     format_overrides:
       - goos: windows
         format: zip
@@ -31,8 +27,7 @@ archives:
       - README.md
 
 nfpms:
-  -
-    id: updater
+  - id: updater
     package_name: updater
     file_name_template: "{{.ProjectName}}_{{.Tag}}_{{.Os}}_{{.Arch}}"
     vendor: Umputun
@@ -49,11 +44,9 @@ nfpms:
     contents:
       - src: updater.service
         dst: /etc/systemd/system/updater.service
-
       - src: updater.yml
         dst: /etc/updater-example.yml
         type: config
-
     scripts:
       postinstall: "scripts/postinstall.sh"
       preremove: "scripts/preremove.sh"
