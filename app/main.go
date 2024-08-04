@@ -24,9 +24,9 @@ var opts struct {
 	Listen      string        `short:"l" long:"listen" env:"LISTEN" default:"localhost:8080" description:"listen on host:port"`
 	SecretKey   string        `short:"k" long:"key" env:"KEY" required:"true" description:"secret key"`
 	Batch       bool          `short:"b" long:"batch" description:"batch mode for multi-line scripts"`
-	Limit       int           `long:"limit"  default:"10" description:"limit how many concurrent update can be running"`
-	TimeOut     time.Duration `long:"timeout"  default:"1m" description:"for how long update task can be running"`
-	UpdateDelay time.Duration `long:"update-delay"  default:"1s" description:"delay between updates"`
+	Limit       int           `long:"limit" default:"10" description:"limit how many concurrent update can be running"`
+	TimeOut     time.Duration `long:"timeout" default:"1m" description:"for how long batch update task can be running"`
+	UpdateDelay time.Duration `long:"update-delay" default:"1s" description:"delay between updates"`
 	Dbg         bool          `long:"dbg" env:"DEBUG" description:"show debug info"`
 }
 
@@ -72,6 +72,7 @@ func main() {
 		Config:      conf,
 		Runner:      runner,
 		UpdateDelay: opts.UpdateDelay,
+		Timeout:     opts.TimeOut,
 	}
 
 	if err := srv.Run(ctx); err != nil {
