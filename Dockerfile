@@ -1,4 +1,4 @@
-FROM umputun/baseimage:buildgo-v1.13.0  as build
+FROM umputun/baseimage:buildgo-v1.14.0 AS build
 
 ARG GIT_BRANCH
 ARG GITHUB_SHA
@@ -19,7 +19,7 @@ RUN \
     cd app && go build -o /build/updater -ldflags "-X main.revision=${version} -s -w"
 
 
-FROM ghcr.io/umputun/baseimage/app:v1.13.0
+FROM ghcr.io/umputun/baseimage/app:v1.14.0
 LABEL org.opencontainers.image.source="https://github.com/umputun/updater"
 
 RUN apk add docker openssh-client
