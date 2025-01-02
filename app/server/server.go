@@ -8,11 +8,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/didip/tollbooth/v7"
-	"github.com/didip/tollbooth_chi"
-	"github.com/go-chi/chi/v5"
+	"github.com/didip/tollbooth/v8"
 	log "github.com/go-pkgz/lgr"
 	"github.com/go-pkgz/rest"
+	"github.com/go-pkgz/routegroup"
 )
 
 //go:generate moq -out mocks/config.go -pkg mocks -skip-ensure -fmt goimports . Config
@@ -66,25 +65,25 @@ func (s *Rest) Run(ctx context.Context) error {
 }
 
 func (s *Rest) router() http.Handler {
-	router := chi.NewRouter()
+	router := routegroup.New(http.NewServeMux())
 	router.Use(rest.Recoverer(log.Default()))
-	router.Use(rest.Throttle(100)) // limit total number of the running requests
+	router.Use(rest.Throttle(100)) // limit the total number of the running requests
 	router.Use(rest.AppInfo("updater", "umputun", s.Version))
 	router.Use(rest.Ping)
-	router.Use(tollbooth_chi.LimitHandler(tollbooth.NewLimiter(10, nil)))
+	router.Use(tollbooth.HTTPMiddleware(tollbooth.NewLimiter(10, nil)))
 	if s.UpdateDelay > 0 {
 		router.Use(s.slowMiddleware)
 	}
 
-	router.Get("/update/{task}/{key}", s.taskCtrl)
-	router.Post("/update", s.taskPostCtrl)
+	router.HandleFunc("GET /update/{task}/{key}", s.taskCtrl)
+	router.HandleFunc("POST /update", s.taskPostCtrl)
 	return router
 }
 
 // GET /update/{task}/{key}?async=[0|1]
 func (s *Rest) taskCtrl(w http.ResponseWriter, r *http.Request) {
-	taskName := chi.URLParam(r, "task")
-	key := chi.URLParam(r, "key")
+	taskName := r.PathValue("task")
+	key := r.PathValue("key")
 	isAsync := r.URL.Query().Get("async") == "1" || r.URL.Query().Get("async") == "yes"
 	s.execTask(w, r, key, taskName, isAsync)
 }
@@ -99,6 +98,10 @@ func (s *Rest) taskPostCtrl(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "failed to decode request", http.StatusBadRequest)
+		return
+	}
+	if req.Task == "" || req.Secret == "" {
+		http.Error(w, "task and secret required", http.StatusBadRequest)
 		return
 	}
 	s.execTask(w, r, req.Secret, req.Task, req.Async)
@@ -120,7 +123,9 @@ func (s *Rest) execTask(w http.ResponseWriter, r *http.Request, secret, taskName
 
 	if isAsync {
 		go func() {
-			if err := s.Runner.Run(context.Background(), command, log.ToWriter(log.Default(), ">")); err != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), s.Timeout)
+			defer cancel()
+			if err := s.Runner.Run(ctx, command, log.ToWriter(log.Default(), ">")); err != nil {
 				log.Printf("[WARN] failed command")
 				return
 			}

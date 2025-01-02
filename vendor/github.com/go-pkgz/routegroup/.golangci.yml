@@ -1,10 +1,10 @@
-run:
-  timeout: 5m
-
 linters-settings:
   govet:
-    enable:
-      - shadow
+    check-shadowing: true
+  gocyclo:
+    min-complexity: 15
+  maligned:
+    suggest-new: true
   goconst:
     min-len: 2
     min-occurrences: 2
@@ -19,27 +19,21 @@ linters-settings:
       - experimental
     disabled-checks:
       - wrapperFunc
-      - hugeParam
-      - rangeValCopy
-      - singleCaseSwitch
-      - ifElseChain
 
 linters:
   enable:
+    - megacheck
+    - revive
     - govet
     - unconvert
-    - staticcheck
-    - gosec
-    - gocyclo
-    - dupl
+    - gas
     - misspell
     - unparam
-    - unused
     - typecheck
     - ineffassign
     - stylecheck
     - gochecknoinits
-    - copyloopvar
+    - exportloopref
     - gocritic
     - nakedret
     - gosimple
@@ -47,18 +41,16 @@ linters:
   fast: false
   disable-all: true
 
-issues:
-  exclude-dirs:
+run:
+  output:
+    format: tab
+  skip-dirs:
     - vendor
+
+
+issues:
   exclude-rules:
-    - text: "at least one file in a package should have a package comment"
-      linters:
-        - stylecheck
-    - text: "should have a package comment, unless it's in another file for this package"
-      linters:
-        - golint
-    - path: _test\.go
+    - text: "G114: Use of net/http serve function that has no support for setting timeouts"
       linters:
         - gosec
-        - dupl
   exclude-use-default: false

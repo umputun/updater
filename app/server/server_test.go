@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -120,4 +121,109 @@ func TestRest_taskPostCtrl(t *testing.T) {
 	assert.Equal(t, 2, len(runner.RunCalls()))
 	assert.Equal(t, "echo task1", runner.RunCalls()[0].Command)
 	assert.Equal(t, "echo task2", runner.RunCalls()[1].Command)
+}
+
+func TestRest_taskPostCtrl_BadRequests(t *testing.T) {
+	srv := Rest{SecretKey: "12345"}
+	ts := httptest.NewServer(srv.router())
+	defer ts.Close()
+
+	tests := []struct {
+		name       string
+		body       string
+		wantStatus int
+	}{
+		{
+			name:       "invalid json",
+			body:       `{"task":}`,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "empty task",
+			body:       `{"task":"","secret":"12345"}`,
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "empty secret",
+			body:       `{"task":"task1","secret":""}`,
+			wantStatus: http.StatusBadRequest,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resp, err := http.Post(ts.URL+"/update", "application/json", strings.NewReader(tt.body))
+			require.NoError(t, err)
+			assert.Equal(t, tt.wantStatus, resp.StatusCode)
+		})
+	}
+}
+
+func TestRest_taskCtrl_ConfigError(t *testing.T) {
+	conf := &mocks.ConfigMock{GetTaskCommandFunc: func(name string) (string, bool) {
+		return "", false
+	}}
+
+	srv := Rest{Config: conf, SecretKey: "12345"}
+	ts := httptest.NewServer(srv.router())
+	defer ts.Close()
+
+	resp, err := http.Get(ts.URL + "/update/unknown/12345")
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+}
+
+func TestRest_taskCtrl_RunnerError(t *testing.T) {
+	conf := &mocks.ConfigMock{GetTaskCommandFunc: func(name string) (string, bool) {
+		return "echo " + name, true
+	}}
+
+	runner := &mocks.RunnerMock{RunFunc: func(context.Context, string, io.Writer) error {
+		return io.EOF
+	}}
+
+	srv := Rest{Config: conf, Runner: runner, SecretKey: "12345"}
+	ts := httptest.NewServer(srv.router())
+	defer ts.Close()
+
+	resp, err := http.Get(ts.URL + "/update/task1/12345")
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+}
+
+func TestRest_SlowMiddleware_SkipsOnZeroDelay(t *testing.T) {
+	srv := Rest{UpdateDelay: 0}
+	ts := httptest.NewServer(srv.router())
+	defer ts.Close()
+
+	start := time.Now()
+	resp, err := http.Get(ts.URL + "/ping")
+	require.NoError(t, err)
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	assert.Less(t, time.Since(start), time.Millisecond*100)
+}
+
+func TestRest_taskCtrlAsync_ValidatesResponse(t *testing.T) {
+	conf := &mocks.ConfigMock{GetTaskCommandFunc: func(name string) (string, bool) {
+		return "echo " + name, true
+	}}
+	runner := &mocks.RunnerMock{RunFunc: func(context.Context, string, io.Writer) error {
+		return nil
+	}}
+
+	srv := Rest{Config: conf, Runner: runner, SecretKey: "12345"}
+	ts := httptest.NewServer(srv.router())
+	defer ts.Close()
+
+	resp, err := http.Get(ts.URL + "/update/task1/12345?async=1")
+	require.NoError(t, err)
+
+	var result struct {
+		Submitted string `json:"submitted"`
+		Task      string `json:"task"`
+	}
+	err = json.NewDecoder(resp.Body).Decode(&result)
+	require.NoError(t, err)
+	assert.Equal(t, "ok", result.Submitted)
+	assert.Equal(t, "task1", result.Task)
 }
