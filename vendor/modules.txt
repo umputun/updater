@@ -19,7 +19,7 @@ github.com/go-pkgz/lgr
 github.com/go-pkgz/rest
 github.com/go-pkgz/rest/logger
 github.com/go-pkgz/rest/realip
-# github.com/go-pkgz/routegroup v1.2.0
+# github.com/go-pkgz/routegroup v1.3.0
 ## explicit; go 1.22
 github.com/go-pkgz/routegroup
 # github.com/go-pkgz/syncs v1.3.2
