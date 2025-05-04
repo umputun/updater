@@ -6,8 +6,8 @@ github.com/go-pkgz/expirable-cache/v3 v3.0.0 h1:u3/gcu3sabLYiTCevoRKv+WzjIn5oo7P
 github.com/go-pkgz/expirable-cache/v3 v3.0.0/go.mod h1:2OQiDyEGQalYecLWmXprm3maPXeVb5/6/X7yRPYTzec=
 github.com/go-pkgz/lgr v0.11.1 h1:hXFhZcznehI6imLhEa379oMOKFz7TQUmisAqb3oLOSM=
 github.com/go-pkgz/lgr v0.11.1/go.mod h1:tgDF4RXQnBfIgJqjgkv0yOeTQ3F1yewWIZkpUhHnAkU=
-github.com/go-pkgz/rest v1.20.2 h1:6wYWo85H7xFU09FadVKKc5LKIfIpCStBXJj9F/P4COc=
-github.com/go-pkgz/rest v1.20.2/go.mod h1:NC2xNN/y1rIs0PY13FowKoH8rk9RhJNJ0tTbkBg8Yks=
+github.com/go-pkgz/rest v1.20.3 h1:oGGfM8XTnvwek29q1OAhcI1nkKKOpurRFApBiYH44Fk=
+github.com/go-pkgz/rest v1.20.3/go.mod h1:NC2xNN/y1rIs0PY13FowKoH8rk9RhJNJ0tTbkBg8Yks=
 github.com/go-pkgz/routegroup v1.3.1 h1:XAVWskX8Iup6HoQD9zv+gJx4DOJC2DSkKBHCMeeW8/s=
 github.com/go-pkgz/routegroup v1.3.1/go.mod h1:kDDPDRLRiRY1vnENrZJw1jQAzQX7fvsbsHGRQFNQfKc=
 github.com/go-pkgz/syncs v1.3.2 h1:gmioASlJNy3gNosPlgvWOM2QP0Hdjzn2u+/sUShgd8E=
