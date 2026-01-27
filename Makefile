@@ -26,7 +26,6 @@ site:
 	docker run -d --name=updater.site updater.site
 	docker cp updater.site:/build/public site/
 	docker rm -f updater.site
-	rsync -avz -e "ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" --progress ./site/public/ updater.io:/srv/www/reproxy.io
 
 info:
 	- @echo "revision $(REV)"
