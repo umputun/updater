@@ -7,18 +7,13 @@ docker:
 	docker build -t umputun/updater:master --progress=plain .
 
 dist:
-	- @mkdir -p dist
-	docker build -f Dockerfile.artifacts --progress=plain -t updater.bin .
-	- @docker rm -f updater.bin 2>/dev/null || exit 0
-	docker run -d --name=updater.bin updater.bin
-	docker cp updater.bin:/artifacts dist/
-	docker rm -f updater.bin
+	goreleaser --snapshot --clean
 
 race_test:
 	cd app && go test -race -timeout=60s -count 1 ./...
 
 build: info
-	- cd app && GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X main.revision=$(REV) -s -w" -o ../dist/updater
+	cd app && CGO_ENABLED=0 go build -ldflags "-X main.revision=$(REV) -s -w" -o /tmp/updater
 
 site:
 	@rm -f  site/public/*
@@ -30,4 +25,4 @@ site:
 info:
 	- @echo "revision $(REV)"
 
-.PHONY: dist docker race_test bin info site build_site
+.PHONY: dist docker race_test build info site
