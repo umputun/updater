@@ -16,6 +16,7 @@
 
 var/
 dist/
+.bin/
 docker-compose-private.yml
 .vscode
 .idea

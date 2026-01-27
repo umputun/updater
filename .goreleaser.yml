@@ -1,5 +1,10 @@
+version: 2
+project_name: updater
+dist: .bin
 builds:
-  - env:
+  - id: updater
+    binary: "updater"
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
@@ -10,15 +15,24 @@ builds:
       - arm
       - arm64
     ignore:
-      - goos: freebsd
+      - goos: windows
         goarch: arm
-      - goos: freebsd
+      - goos: windows
         goarch: arm64
     dir: app
     ldflags: "-s -w -X main.revision={{.Tag}}-{{.ShortCommit}}-{{.CommitDate}}"
 
 archives:
-  - name_template: "{{ .ProjectName }}_{{ .Tag }}_{{ if eq .Os \"darwin\" }}macos{{ else }}{{ .Os }}{{ end }}_{{ .Arch }}"
+  - id: updater
+    name_template: >-
+      {{.ProjectName}}_
+      {{- .Tag}}_
+      {{- if eq .Os "darwin"}}macos
+      {{- else if eq .Os "windows"}}win
+      {{- else}}{{.Os}}{{end}}_
+      {{- if eq .Arch "amd64"}}x86_64
+      {{- else if eq .Arch "386"}}i386
+      {{- else}}{{.Arch}}{{end}}
     format_overrides:
       - goos: windows
         format: zip
