@@ -43,21 +43,24 @@ func TestRest_taskCtrl(t *testing.T) {
 	st := time.Now()
 	resp, err := http.Get(ts.URL + "/update/task1/12345")
 	require.NoError(t, err)
+	defer resp.Body.Close()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	resp, err = http.Get(ts.URL + "/update/task2/12345")
 	require.NoError(t, err)
+	defer resp.Body.Close()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	resp, err = http.Get(ts.URL + "/update/task2/12345bad")
 	require.NoError(t, err)
+	defer resp.Body.Close()
 	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
-	assert.True(t, time.Since(st) >= time.Millisecond*200)
-	assert.Equal(t, 2, len(conf.GetTaskCommandCalls()))
+	assert.GreaterOrEqual(t, time.Since(st), time.Millisecond*200)
+	assert.Len(t, conf.GetTaskCommandCalls(), 2)
 	assert.Equal(t, "task1", conf.GetTaskCommandCalls()[0].Name)
 	assert.Equal(t, "task2", conf.GetTaskCommandCalls()[1].Name)
 
-	assert.Equal(t, 2, len(runner.RunCalls()))
+	assert.Len(t, runner.RunCalls(), 2)
 	assert.Equal(t, "echo task1", runner.RunCalls()[0].Command)
 	assert.Equal(t, "echo task2", runner.RunCalls()[1].Command)
 }
@@ -80,8 +83,9 @@ func TestRest_taskCtrlAsync(t *testing.T) {
 	st := time.Now()
 	resp, err := http.Get(ts.URL + "/update/task1/12345?async=1")
 	require.NoError(t, err)
+	defer resp.Body.Close()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	assert.True(t, time.Since(st) < 100*time.Millisecond, time.Since(st))
+	assert.Less(t, time.Since(st), 100*time.Millisecond)
 	time.Sleep(100 * time.Millisecond)
 }
 
@@ -102,23 +106,25 @@ func TestRest_taskPostCtrl(t *testing.T) {
 
 	st := time.Now()
 	resp, err := http.Post(ts.URL+"/update", "application/json", strings.NewReader(`{"task":"task1","secret":"12345"}`))
-
 	require.NoError(t, err)
+	defer resp.Body.Close()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	resp, err = http.Post(ts.URL+"/update", "application/json", strings.NewReader(`{"task":"task2","secret":"12345"}`))
 	require.NoError(t, err)
+	defer resp.Body.Close()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	resp, err = http.Post(ts.URL+"/update", "application/json", strings.NewReader(`{"task":"task2","secret":"12345bad"}`))
 	require.NoError(t, err)
+	defer resp.Body.Close()
 	assert.Equal(t, http.StatusForbidden, resp.StatusCode)
-	assert.True(t, time.Since(st) >= time.Millisecond*200)
-	assert.Equal(t, 2, len(conf.GetTaskCommandCalls()))
+	assert.GreaterOrEqual(t, time.Since(st), time.Millisecond*200)
+	assert.Len(t, conf.GetTaskCommandCalls(), 2)
 	assert.Equal(t, "task1", conf.GetTaskCommandCalls()[0].Name)
 	assert.Equal(t, "task2", conf.GetTaskCommandCalls()[1].Name)
 
-	assert.Equal(t, 2, len(runner.RunCalls()))
+	assert.Len(t, runner.RunCalls(), 2)
 	assert.Equal(t, "echo task1", runner.RunCalls()[0].Command)
 	assert.Equal(t, "echo task2", runner.RunCalls()[1].Command)
 }
@@ -154,6 +160,7 @@ func TestRest_taskPostCtrl_BadRequests(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			resp, err := http.Post(ts.URL+"/update", "application/json", strings.NewReader(tt.body))
 			require.NoError(t, err)
+			defer resp.Body.Close()
 			assert.Equal(t, tt.wantStatus, resp.StatusCode)
 		})
 	}
@@ -170,6 +177,7 @@ func TestRest_taskCtrl_ConfigError(t *testing.T) {
 
 	resp, err := http.Get(ts.URL + "/update/unknown/12345")
 	require.NoError(t, err)
+	defer resp.Body.Close()
 	assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 }
 
@@ -188,6 +196,7 @@ func TestRest_taskCtrl_RunnerError(t *testing.T) {
 
 	resp, err := http.Get(ts.URL + "/update/task1/12345")
 	require.NoError(t, err)
+	defer resp.Body.Close()
 	assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 }
 
@@ -199,6 +208,7 @@ func TestRest_SlowMiddleware_SkipsOnZeroDelay(t *testing.T) {
 	start := time.Now()
 	resp, err := http.Get(ts.URL + "/ping")
 	require.NoError(t, err)
+	defer resp.Body.Close()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 	assert.Less(t, time.Since(start), time.Millisecond*100)
 }
@@ -217,6 +227,7 @@ func TestRest_taskCtrlAsync_ValidatesResponse(t *testing.T) {
 
 	resp, err := http.Get(ts.URL + "/update/task1/12345?async=1")
 	require.NoError(t, err)
+	defer resp.Body.Close()
 
 	var result struct {
 		Submitted string `json:"submitted"`

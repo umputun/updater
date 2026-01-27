@@ -1,9 +1,10 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/binary"
 	"fmt"
 	"io"
-	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
@@ -16,14 +17,16 @@ import (
 )
 
 func Test_main(t *testing.T) {
-	port := 40000 + int(rand.Int31n(10000))
+	var buf [4]byte
+	_, err := rand.Read(buf[:])
+	require.NoError(t, err)
+	port := 40000 + int(binary.BigEndian.Uint32(buf[:])%10000)
 	os.Args = []string{"app", "--key=12345", "--listen=127.0.0.1:" + strconv.Itoa(port), "--file=../updater.yml", "--dbg"}
 
 	done := make(chan struct{})
 	go func() {
 		<-done
-		e := syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
-		require.NoError(t, e)
+		_ = syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
 	}()
 
 	finished := make(chan struct{})
@@ -47,7 +50,7 @@ func Test_main(t *testing.T) {
 		defer resp.Body.Close()
 		assert.Equal(t, 200, resp.StatusCode)
 		body, err := io.ReadAll(resp.Body)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "pong", string(body))
 	}
 
@@ -69,7 +72,7 @@ func Test_main(t *testing.T) {
 func waitForHTTPServerStart(port int) {
 	// wait for up to 10 seconds for server to start before returning it
 	client := http.Client{Timeout: time.Second}
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		time.Sleep(time.Millisecond * 100)
 		if resp, err := client.Get(fmt.Sprintf("http://localhost:%d/ping", port)); err == nil {
 			_ = resp.Body.Close()

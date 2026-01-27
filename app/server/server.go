@@ -46,7 +46,7 @@ func (s *Rest) Run(ctx context.Context) error {
 		Addr:              s.Listen,
 		Handler:           s.router(),
 		ReadHeaderTimeout: time.Second,
-		WriteTimeout:      s.Timeout + 10*time.Second, // Give enough time to finish the task and respond
+		WriteTimeout:      s.Timeout + 10*time.Second, // give enough time to finish the task and respond
 		IdleTimeout:       time.Second,
 		ErrorLog:          log.ToStdLogger(log.Default(), "WARN"),
 	}
@@ -58,7 +58,6 @@ func (s *Rest) Run(ctx context.Context) error {
 				log.Printf("[ERROR] failed to close http server, %v", err)
 			}
 		}
-
 	}()
 
 	return httpServer.ListenAndServe()

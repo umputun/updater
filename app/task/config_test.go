@@ -10,7 +10,7 @@ import (
 func TestLoadConfig(t *testing.T) {
 	c, err := LoadConfig("testdata/test.yml")
 	require.NoError(t, err)
-	assert.Equal(t, 2, len(c.Tasks))
+	assert.Len(t, c.Tasks, 2)
 	assert.Equal(t, "test1", c.Tasks[0].Name)
 	assert.Equal(t, "test2", c.Tasks[1].Name)
 	assert.Equal(t, "do blah1", c.Tasks[0].Command)

@@ -1,25 +1,22 @@
-FROM umputun/baseimage:buildgo-v1.19.0 AS build
+FROM umputun/baseimage:buildgo-latest AS build
 
 ARG GIT_BRANCH
 ARG GITHUB_SHA
 ARG CI
 
-ENV CGO_ENABLED=0
-
-ADD . /build
-WORKDIR /build
-
-RUN apk add --no-cache --update git tzdata ca-certificates
+ADD . /build/updater
+WORKDIR /build/updater
 
 RUN \
     if [ -z "$CI" ] ; then \
-    echo "runs outside of CI" && version=$(git rev-parse --abbrev-ref HEAD)-$(git log -1 --format=%h)-$(date +%Y%m%dT%H:%M:%S); \
+    echo "runs outside of CI" && version=$(/script/git-rev.sh); \
     else version=${GIT_BRANCH}-${GITHUB_SHA:0:7}-$(date +%Y%m%dT%H:%M:%S); fi && \
     echo "version=$version" && \
-    cd app && go build -o /build/updater -ldflags "-X main.revision=${version} -s -w"
+    cd app && go build -o /build/updater/updater -ldflags "-X main.revision=${version} -s -w"
 
 
-FROM ghcr.io/umputun/baseimage/app:v1.19.0
+FROM umputun/baseimage:app-latest
+
 LABEL org.opencontainers.image.source="https://github.com/umputun/updater"
 
 RUN apk add docker openssh-client
@@ -32,6 +29,7 @@ RUN \
   chmod 600 /home/app/.ssh/* && \
   chmod 700 /home/app/.ssh
 
-COPY --from=build /build/updater /srv/updater
+COPY --from=build /build/updater/updater /srv/updater
 WORKDIR /srv
+ENTRYPOINT ["/init.sh"]
 CMD ["/srv/updater"]

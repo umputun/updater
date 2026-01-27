@@ -51,7 +51,7 @@ func (s *ShellRunner) Run(ctx context.Context, command string, logWriter io.Writ
 			suppressError = true
 			log.Printf("[DEBUG] suppress error for %s", command)
 		}
-		cmd := exec.CommandContext(ctx, "sh", "-c", command) // nolint
+		cmd := exec.CommandContext(ctx, "sh", "-c", command)
 		cmd.Stdout = logWriter
 		cmd.Stderr = logWriter
 		cmd.Stdin = os.Stdin
@@ -65,7 +65,7 @@ func (s *ShellRunner) Run(ctx context.Context, command string, logWriter io.Writ
 		return nil
 	}
 
-	for _, c := range strings.Split(command, "\n") {
+	for c := range strings.SplitSeq(command, "\n") {
 		if c = strings.TrimSpace(c); c == "" {
 			continue
 		}
@@ -85,7 +85,7 @@ func (s *ShellRunner) runBatch(batchFile string, logWriter io.Writer, timeout ti
 			log.Printf("[WARN] can't remove temp batch file %s, %v", batchFile, e)
 		}
 	}()
-	cmd := exec.CommandContext(ctx, "sh", batchFile) // nolint
+	cmd := exec.CommandContext(ctx, "sh", batchFile)
 	cmd.Stdout = logWriter
 	cmd.Stderr = logWriter
 	cmd.Stdin = os.Stdin
@@ -95,9 +95,10 @@ func (s *ShellRunner) runBatch(batchFile string, logWriter io.Writer, timeout ti
 }
 
 func (s *ShellRunner) prepBatch(cmd string) (batchFile string, err error) {
-	var script []string
-	script = append(script, "#!bin/sh")
-	script = append(script, strings.Split(cmd, "\n")...)
+	lines := strings.Split(cmd, "\n")
+	script := make([]string, 0, len(lines)+1)
+	script = append(script, "#!/bin/sh")
+	script = append(script, lines...)
 	fh, e := os.CreateTemp("/tmp", "updater")
 	if e != nil {
 		return "", errors.Wrap(e, "failed to prep batch")
@@ -107,7 +108,7 @@ func (s *ShellRunner) prepBatch(cmd string) (batchFile string, err error) {
 		fname := fh.Name()
 		errs = multierror.Append(errs, fh.Sync())
 		errs = multierror.Append(errs, fh.Close())
-		errs = multierror.Append(errs, os.Chmod(fname, 0755)) // nolint
+		errs = multierror.Append(errs, os.Chmod(fname, 0o755)) //nolint:gosec // batch file must be executable
 		if errs.ErrorOrNil() != nil {
 			log.Printf("[WARN] can't properly close %s, %v", fname, errs.Error())
 		}
