@@ -4,6 +4,8 @@ ARG GIT_BRANCH
 ARG GITHUB_SHA
 ARG CI
 
+ENV CGO_ENABLED=0
+
 ADD . /build/updater
 WORKDIR /build/updater
 
