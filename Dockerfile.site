@@ -1,4 +1,4 @@
-FROM squidfunk/mkdocs-material as build
+FROM squidfunk/mkdocs-material AS build
 
 WORKDIR /build
 RUN mkdir -p /build/docs
