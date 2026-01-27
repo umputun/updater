@@ -100,6 +100,35 @@ services:
       reproxy.route: '^/(.*)'
 ```
 
+### Container user and group customization
+
+The container runs as user `app` (UID 1001) and includes a `docker` group (GID 999) for docker socket access. If your host uses different IDs, you can customize them via environment variables:
+
+- `APP_UID` - UID for the app user (default: 1001)
+- `DOCKER_GID` - GID for docker socket access (default: 999)
+
+To find the values on your host:
+
+```bash
+# find docker socket GID
+stat -c %g /var/run/docker.sock  # Linux
+stat -f %g /var/run/docker.sock  # macOS
+
+# find your user's UID (if mounting volumes that need matching ownership)
+id -u
+```
+
+Example with custom values:
+
+```yaml
+  updater:
+    image: ghcr.io/umputun/updater:master
+    environment:
+      - APP_UID=1000
+      - DOCKER_GID=998
+      # ... other env vars
+```
+
 ## Working with docker-compose
 
 For a simple container, started with all the parameters manually, the typical update sequence can be as simple as "kill container and recreate it", however docker compose-based container can be a little trickier. If user runs updater directly on the host (not from a container) the update command can be as trivial as "docker-compose pull <service> && docker-compose up -d <service>". In case if updater runs from a container the simplest way to do the same is "ssh user@bridge-ip docker-compose ...". To simplify the process the openssh-client already preinstalled. 
