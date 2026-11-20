@@ -121,7 +121,7 @@ func (s *Rest) execTask(w http.ResponseWriter, r *http.Request, secret, taskName
 	log.Printf("[INFO] invoke task %s", taskName)
 
 	if isAsync {
-		go func() {
+		go func() { //nolint:gosec // async task must outlive the request
 			ctx, cancel := context.WithTimeout(context.Background(), s.Timeout)
 			defer cancel()
 			if err := s.Runner.Run(ctx, command, log.ToWriter(log.Default(), ">")); err != nil {

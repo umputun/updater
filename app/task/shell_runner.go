@@ -51,7 +51,7 @@ func (s *ShellRunner) Run(ctx context.Context, command string, logWriter io.Writ
 			suppressError = true
 			log.Printf("[DEBUG] suppress error for %s", command)
 		}
-		cmd := exec.CommandContext(ctx, "sh", "-c", command)
+		cmd := exec.CommandContext(ctx, "sh", "-c", command) //nolint:gosec // command comes from local task configuration
 		cmd.Stdout = logWriter
 		cmd.Stderr = logWriter
 		cmd.Stdin = os.Stdin
@@ -85,7 +85,7 @@ func (s *ShellRunner) runBatch(batchFile string, logWriter io.Writer, timeout ti
 			log.Printf("[WARN] can't remove temp batch file %s, %v", batchFile, e)
 		}
 	}()
-	cmd := exec.CommandContext(ctx, "sh", batchFile)
+	cmd := exec.CommandContext(ctx, "sh", batchFile) //nolint:gosec // batch file is generated from configured task commands
 	cmd.Stdout = logWriter
 	cmd.Stderr = logWriter
 	cmd.Stdin = os.Stdin
